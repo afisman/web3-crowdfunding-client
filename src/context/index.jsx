@@ -16,14 +16,16 @@ export const StateContextProvider = ({ children }) => {
     const publishCampaign = async (form) => {
 
         try {
-            const data = await createCampaign([
-                address,
-                form.title,
-                form.description,
-                form.target,
-                new Date(form.deadline).getTime(),
-                form.image
-            ])
+            const data = await createCampaign({
+                args: [
+                    address,
+                    form.title,
+                    form.description,
+                    form.target,
+                    new Date(form.deadline).getTime(),
+                    form.image
+                ]
+            })
             console.log('contract call success', data)
         } catch (error) {
             console.log('contract call failure', error)
@@ -31,12 +33,30 @@ export const StateContextProvider = ({ children }) => {
 
     }
 
+    const getCampaigns = async () => {
+        const campaigns = await contract.call('getcampaigns')
+
+        const parsedCampaigns = campaigns.map((campaign, i) => ({
+            owner: campaign.owner,
+            title: campaign.title,
+            description: campaign.description,
+            target: ethers.utils.formatEther(campaign.target.toString()),
+            deadline: campaign.deadline.toNumber(),
+            amountCollected: ethers.utils.formatEther(campaign.amountCollected.toString()),
+            image: campaign.image,
+            pId: i
+        }))
+
+        return parsedCampaigns
+    }
+
     return <StateContext.Provider
         value={{
             address,
             contract,
             connect,
-            createCampaign: publishCampaign
+            createCampaign: publishCampaign,
+            getCampaigns
         }}
     >
         {children}
