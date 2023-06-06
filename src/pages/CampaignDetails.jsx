@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useStateContext } from '../context';
 import { CountBox, CustomButton, Loader } from '../components';
@@ -10,6 +10,8 @@ import { thirdweb } from '../assets';
 
 
 const CampaignDetails = () => {
+
+    const navigate = useNavigate()
 
     const { state } = useLocation();
     const { donate, getDonations, contract, address } = useStateContext();
@@ -30,6 +32,8 @@ const CampaignDetails = () => {
         setIsLoading(true);
 
         await donate(state.pId, amount);
+
+        navigate('/');
 
         setIsLoading(false);
     }
