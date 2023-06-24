@@ -14,7 +14,7 @@ const CampaignDetails = () => {
     const navigate = useNavigate()
 
     const { state } = useLocation();
-    const { donate, getDonations, contract, address } = useStateContext();
+    const { donate, getDonations, contract, address, connectionStatus, connect } = useStateContext();
 
     const [isLoading, setIsLoading] = useState(false);
     const [amount, setAmount] = useState('');
@@ -29,13 +29,18 @@ const CampaignDetails = () => {
     }
 
     const handleDonate = async () => {
-        setIsLoading(true);
+        if (connectionStatus == 'connected') {
 
-        await donate(state.pId, amount);
+            setIsLoading(true);
 
-        navigate('/');
+            await donate(state.pId, amount);
 
-        setIsLoading(false);
+            navigate('/');
+
+            setIsLoading(false);
+        } else {
+            connect();
+        }
     }
 
     useEffect(() => {

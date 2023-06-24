@@ -1,18 +1,22 @@
 import React, { useContext, createContext } from 'react';
 
-import { useAddress, useContract, useMetamask, useContractWrite } from '@thirdweb-dev/react';
+import { useAddress, useContract, useMetamask, useContractWrite, useDisconnect, useConnectionStatus } from '@thirdweb-dev/react';
 import { ethers } from 'ethers';
 
 const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
 
-    // const { contract } = useContract('0xA8a7121b0c9D3860c56699e4423eAE1F83DFD706'); //Old contract
+
     const { contract } = useContract('0x9BE7Bcc55BBDf668AA9618Bc75Ee619d16d7eb63');
     const { mutateAsync: createCampaign } = useContractWrite(contract, 'createCampaign');
 
     const address = useAddress();
     const connect = useMetamask();
+    const disconnect = useDisconnect();
+
+    const connectionStatus = useConnectionStatus()
+
 
     const publishCampaign = async (form) => {
 
@@ -37,10 +41,8 @@ export const StateContextProvider = ({ children }) => {
     const getCampaigns = async () => {
         const campaigns = await contract.call('getCampaigns')
 
-        const filteredCampaigns = campaigns.filter((campaign) =>
-            campaign.state == 0
-        )
-        const parsedCampaigns = filteredCampaigns.map((campaign, i) => ({
+
+        const parsedCampaigns = campaigns.map((campaign, i) => ({
             owner: campaign.owner,
             title: campaign.title,
             description: campaign.description,
@@ -55,6 +57,14 @@ export const StateContextProvider = ({ children }) => {
         return parsedCampaigns;
     }
 
+    const getActiveCampagins = async () => {
+        const allCampaigns = await getCampaigns();
+
+        const filteredCampaigns = allCampaigns.filter((campaign) => campaign.state === 0);
+
+        return filteredCampaigns;
+    }
+
     const getUserCampaigns = async () => {
 
         const allCampaigns = await getCampaigns();
@@ -64,12 +74,19 @@ export const StateContextProvider = ({ children }) => {
         return filteredCampaigns;
     }
 
+    const getFinishedCampaigns = async () => {
+        const allCampaigns = await getCampaigns();
+
+        const filteredCampaigns = allCampaigns.filter((campaign) => campaign.state === 1);
+
+        return filteredCampaigns;
+    }
+
     const donate = async (pId, amount) => {
         console.log(ethers.utils.parseEther(amount))
-        const data = await contract.call('donateToCampaign', [pId], { value: ethers.utils.parseEther(amount) });
-        // const data = await contract.call('donateToCampaign', pId, {
-        //     value: ethers.utils.parseEther(amount)
-        // });
+        const data = await contract.call('donateToCampaign', [pId], {
+            value: ethers.utils.parseEther(amount)
+        });
 
         return data
     }
@@ -95,11 +112,15 @@ export const StateContextProvider = ({ children }) => {
             address,
             contract,
             connect,
+            disconnect,
+            connectionStatus,
             createCampaign: publishCampaign,
             getCampaigns,
             getUserCampaigns,
             donate,
-            getDonations
+            getDonations,
+            getFinishedCampaigns,
+            getActiveCampagins
         }}
     >
         {children}

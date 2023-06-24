@@ -1,20 +1,18 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+
+import { DisplayCampaigns } from '../components'
+import { useStateContext } from '../context'
 
 const FinishedCampaigns = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [campaigns, setCampaigns] = useState([])
 
-    const { address, contract, getCampaigns } = useStateContext()
+    const { address, contract, getFinishedCampaigns } = useStateContext()
 
     const fetchCampaigns = async () => {
-        const finishedData = []
         setIsLoading(true)
-        const data = await getCampaigns()
-        data.forEach((e) => {
-            return e.state == 'finished';
-        })
-
-        setCampaigns(finishedData)
+        const data = await getFinishedCampaigns()
+        setCampaigns(data)
         setIsLoading(false)
     }
 
