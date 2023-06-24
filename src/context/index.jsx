@@ -6,9 +6,9 @@ import { ethers } from 'ethers';
 const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
-    0x19f54185C8FF289EB707A68fd7ef5A9E8B6A4e3b
+
     // const { contract } = useContract('0xA8a7121b0c9D3860c56699e4423eAE1F83DFD706'); //Old contract
-    const { contract } = useContract('0x19f54185C8FF289EB707A68fd7ef5A9E8B6A4e3b');
+    const { contract } = useContract('0x9BE7Bcc55BBDf668AA9618Bc75Ee619d16d7eb63');
     const { mutateAsync: createCampaign } = useContractWrite(contract, 'createCampaign');
 
     const address = useAddress();
@@ -35,12 +35,11 @@ export const StateContextProvider = ({ children }) => {
     }
 
     const getCampaigns = async () => {
-        const campaigns = await contract.call('getcampaigns')
+        const campaigns = await contract.call('getCampaigns')
 
         const filteredCampaigns = campaigns.filter((campaign) =>
-            campaign.state == 'active'
+            campaign.state == 0
         )
-
         const parsedCampaigns = filteredCampaigns.map((campaign, i) => ({
             owner: campaign.owner,
             title: campaign.title,
@@ -66,9 +65,11 @@ export const StateContextProvider = ({ children }) => {
     }
 
     const donate = async (pId, amount) => {
-        const data = await contract.call('donateToCampaign', pId, address, {
-            value: ethers.utils.parseEther(amount)
-        });
+        console.log(ethers.utils.parseEther(amount))
+        const data = await contract.call('donateToCampaign', [pId], { value: ethers.utils.parseEther(amount) });
+        // const data = await contract.call('donateToCampaign', pId, {
+        //     value: ethers.utils.parseEther(amount)
+        // });
 
         return data
     }
